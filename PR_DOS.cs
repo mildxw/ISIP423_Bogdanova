@@ -127,24 +127,31 @@ namespace StoreInventory
         public void RemoveProduct()
         {
             Console.Write("Введите код товара для удаления: ");
-            if (int.TryParse(Console.ReadLine(), out int code))
+            string input = Console.ReadLine();
+
+            if (!int.TryParse(input, out int code))
             {
-                var product = FindByCode(code);
-                if (product != null)
-                {
-                    _products.Remove(product);
-                    WriteSuccess($"Товар \"{product.Name}\" удалён.");
-                }
-                else
-                {
-                    WriteError("Товар с таким кодом не найден.");
-                }
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Ошибка: неверный формат кода. Введите число.");
+                Console.ResetColor();
+                return;
             }
-            else
+
+            var product = FindByCode(code);
+            if (product == null)
             {
-                WriteError("Ошибка: неверный формат кода.");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Товар с таким кодом не найден.");
+                Console.ResetColor();
+                return;
             }
+
+            _products.Remove(product);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"Товар \"{product.Name}\" удалён успешно.");
+            Console.ResetColor();
         }
+
 
         public void OrderProduct()
         {
