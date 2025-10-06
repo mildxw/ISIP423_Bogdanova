@@ -72,36 +72,141 @@ public class Store
             Console.WriteLine(product);
     }
 
-    public Product FindByCode(int code)
+    public Product FindByCode(int code) => _products.FirstOrDefault(p => p.Code == code);
+
+    public List<Product> FindByName(string name) =>
+        _products.Where(p => p.Name.Contains(name, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    public List<Product> FindByCategory(Category category) =>
+        _products.Where(p => p.Category == category).ToList();
+
+   
+    public void AddProduct()
     {
-        return _products.FirstOrDefault(p => p.Code == code);
+        try
+        {
+            Console.Write("Введите название товара: ");
+            string name = Console.ReadLine();
+
+            Console.Write("Введите цену товара: ");
+            if (!decimal.TryParse(Console.ReadLine(), out decimal price))
+            {
+                Console.WriteLine("Ошибка: неверный формат цены.");
+                return;
+            }
+
+            Console.Write("Введите количество товара: ");
+            if (!int.TryParse(Console.ReadLine(), out int quantity))
+            {
+                Console.WriteLine("Ошибка: неверный формат количества.");
+                return;
+            }
+
+            Console.WriteLine("Выберите категорию: 0 - Food, 1 - Electronics, 2 - Clothes");
+            if (!int.TryParse(Console.ReadLine(), out int categoryIndex) || categoryIndex < 0 || categoryIndex > 2)
+            {
+                Console.WriteLine("Ошибка: неверная категория.");
+                return;
+            }
+
+            var category = (Category)categoryIndex;
+            var product = new Product(name, price, quantity, category);
+            _products.Add(product);
+
+            Console.WriteLine($"\n✅ Товар \"{name}\" добавлен успешно!\n");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при добавлении товара: {ex.Message}");
+        }
     }
 
-    public bool IsEmpty() => _products.Count == 0;
+    public void RemoveProduct()
+    {
+        Console.Write("Введите код товара для удаления: ");
+        if (int.TryParse(Console.ReadLine(), out int code))
+        {
+            var product = FindByCode(code);
+            if (product != null)
+            {
+                _products.Remove(product);
+                Console.WriteLine($"✅ Товар \"{product.Name}\" удалён.");
+            }
+            else
+            {
+                Console.WriteLine("Товар с таким кодом не найден.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("Ошибка: неверный формат кода.");
+        }
+    }
 }
 
-
-internal class PR_DOS
+internal class Program
 {
     static void Main(string[] args)
     {
         Console.OutputEncoding = System.Text.Encoding.UTF8;
         Store store = new Store();
 
-        store.ShowAllProducts();
+        while (true)
+        {
+            Console.WriteLine("\n=== МЕНЮ ===");
+            Console.WriteLine("1 - Добавить товар");
+            Console.WriteLine("2 - Удалить товар");
+            Console.WriteLine("3 - Найти товар по названию");
+            Console.WriteLine("4 - Найти товар по категории");
+            Console.WriteLine("5 - Показать все товары");
+            Console.WriteLine("0 - Выход");
+            Console.Write("Ваш выбор: ");
+            string choice = Console.ReadLine();
 
-        Console.WriteLine("\nВведите код товара для поиска:");
-        if (int.TryParse(Console.ReadLine(), out int code))
-        {
-            var product = store.FindByCode(code);
-            if (product != null)
-                Console.WriteLine("\nНайден товар:\n" + product);
-            else
-                Console.WriteLine("Товар с таким кодом не найден.");
-        }
-        else
-        {
-            Console.WriteLine("Ошибка: введено некорректное значение.");
+            switch (choice)
+            {
+                case "1":
+                    store.AddProduct();
+                    break;
+                case "2":
+                    store.RemoveProduct();
+                    break;
+                case "3":
+                    Console.Write("Введите название: ");
+                    var name = Console.ReadLine();
+                    var foundByName = store.FindByName(name);
+                    if (foundByName.Any())
+                        foundByName.ForEach(p => Console.WriteLine(p));
+                    else
+                        Console.WriteLine("Ничего не найдено.");
+                    break;
+                case "4":
+                    Console.WriteLine("Выберите категорию: 0 - Food, 1 - Electronics, 2 - Clothes");
+                    if (int.TryParse(Console.ReadLine(), out int catIndex) && catIndex >= 0 && catIndex <= 2)
+                    {
+                        var category = (Category)catIndex;
+                        var foundByCategory = store.FindByCategory(category);
+                        if (foundByCategory.Any())
+                            foundByCategory.ForEach(p => Console.WriteLine(p));
+                        else
+                            Console.WriteLine("Товары этой категории отсутствуют.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Ошибка: неверная категория.");
+                    }
+                    break;
+                case "5":
+                    store.ShowAllProducts();
+                    break;
+                case "0":
+                    Console.WriteLine("Выход из программы...");
+                    return;
+                default:
+                    Console.WriteLine("Неизвестная команда. Попробуйте снова.");
+                    break;
+            }
         }
     }
 }
+
