@@ -30,6 +30,21 @@ namespace TextAnalyzerApp
             string[]  words = text.Split(separators, StringSplitOptions.RemoveEmptyEntries);
             int wordCount  = words.Length;
 
+            // Поиск самого длиноого/самого короткого слова
+            string shortest = words[0];
+            string longest = words[0];
+
+            for (int i = 1; i < words.Length; i++)
+            {
+                if (words[i].Length < shortest.Length)
+                    shortest = words[i];
+                if (words[i].Length > longest.Length)
+                    longest = words[i];
+            }
+
+            Console.WriteLine($"Самое короткое слово: {shortest}");
+            Console.WriteLine($"Самое длинное слово: {longest}");
+
             // Подсчёт предложений
             int sentenceCount = 0;
             foreach (char c in text)
